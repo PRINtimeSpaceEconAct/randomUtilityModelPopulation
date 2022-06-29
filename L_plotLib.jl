@@ -16,10 +16,10 @@ function plotSol(sol,p; t_step = 0.1)
             vmin = vmin, vmax = vmax, extent=(0.0,p.Lx,0.0,p.Ly))
         xticks(fontsize=15)
         yticks(fontsize=15)
+        title("T = $t")
 
-        # title("T = $t")
-        # colorbar()
-        savefig("pics/vieEmilia$t.eps")
+        colorbar()
+        # savefig("pics/vieEmilia$t.eps")
         pause(0.01)
     end
 end
@@ -40,33 +40,62 @@ function plotSurfSol(sol,p; t_step = 0.1)
         ax.axes.set_zlim3d(bottom=zmin, top=zmax) 
         # pause(0.1)
 
-        # title("T = $t")
+        title("T = $t")
         # savefig("pics/2AD$t.eps")
     end
 end
 
-function plotMass(sol,p)
-    @unpack_AD p 
+function plotFunction(I,p)
+    ratio = p.Nx/p.Ny
+    fig = figure(figsize=(10,10/ratio))
 
-    minX = 3.5
-    maxX = 4.5 
-    minY = y[1]
-    maxY = y[Ny]
+    imshow(I',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    colorbar()
 
-    mini = findfirst(x -> x >= minX,p.x)
-    maxi = findfirst(x -> x >= maxX,p.x)
-    minj = findfirst(x -> x >= minY,p.y)
-    maxj = findfirst(x -> x >= maxY,p.y)
-    
-
-    times = sol.t
-    mass = zeros(length(times))
-    for (i,t) in enumerate(times)
-        mass[i] = sum(sol(t)[mini:maxi,minj:maxj]) * Δx^2
-    end
-    plot(times,mass)
-    xlabel("Period")
-    ylabel("Mass")
-    grid()
-    
 end
+
+function plotAll(sol,p; t = p.T_end)
+    ratio = p.Nx/p.Ny
+    fig = figure(figsize=(15,10/ratio))
+
+    l = sol(t)
+    Wₕᴾl = imfilter(l,p.WₕᴾM,Fill(0,l))           # Wₕᴾ * l 
+    Al = p.GM .* Wₕᴾl                             # local technological progress
+    w =  Al .* abs.(l).^(p.β-1) .* (l .> 0 )      # wages
+    Y =  Al .* abs.(l).^p.β                       # production
+    AEN =  (p.τ * abs.(Y)).^p.φ .- p.γA * l
+    Utility = p.γw * w + p.γEN * AEN
+
+    subplot(231)
+    imshow(l',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    colorbar()
+    title("l")
+
+    subplot(232)
+    imshow(w',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    colorbar()
+    title("w")
+
+    subplot(233)
+    imshow(Y',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    colorbar()
+    title("Total income")
+
+    subplot(234)
+    imshow(AEN',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    colorbar()
+    title("A endogenous")
+
+    subplot(235)
+    imshow(Al',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    colorbar()
+    title("Al")
+
+    subplot(236)
+    imshow(Utility',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    colorbar()
+    title("Utility")
+
+    tight_layout()
+end
+

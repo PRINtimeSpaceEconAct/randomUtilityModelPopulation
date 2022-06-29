@@ -7,6 +7,10 @@ using ImageFiltering
 using Parameters
 using PyPlot
 
+using BenchmarkTools
+using Infiltrator
+using KernelDensity
+
 include("L_parameters.jl")
 include("L_diff.jl")
 include("L_plotLib.jl")

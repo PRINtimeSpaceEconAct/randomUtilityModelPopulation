@@ -10,9 +10,9 @@ include("L_LoadAll.jl")
 
 function main(p)
     
-    T_span = (0.0,p.T_end)
-    prob = ODEProblem(df!, p.u₀, T_span, p)
-    sol = solve(prob,ROCK2(),progress=true,progress_steps = 1)
+    T_span = (0.0,p.T_end);
+    prob = ODEProblem(df!, p.u₀, T_span, p);
+    sol = solve(prob,ROCK2(),progress=true,progress_steps = 1);
     return sol,p
 end
 

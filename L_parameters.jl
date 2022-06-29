@@ -1,27 +1,11 @@
 
 @with_kw struct RUM{T}
-    # aggregation diffusion
-    γa::T = - 0.06      # aggregation (< 0)
-    γd::T = 0.03       # diffusion
-    # γd::T = 0.025       # diffusion
-    h::T = 0.45          # bandwith  
-    # h::T = 0.3          # bandwith  
-    # γ₁::T = 0.01        # growth linear
-    # γ₂::T = -0.02       # growth quadratic
-    γ₁::T = 0.0         # growth linear
-    γ₂::T = 0.0         # growth quadratic
-    γᵥ::T = 1.0         # potential strength
-    
-    # reallocation gain
-    V_GRD::T = 0.0      # reallocation gain physical capital
-    V_GRA::T = 0.0      # reallocation gain labor 
 
     # domain
-    Lx::T = 8.0
-    Ly::T = 2.0
-    T_end::T = 10000.0
-    borderLength::T = 0.5
-    @assert h < borderLength
+    Lx::T = 1.0
+    Ly::T = 1.0
+    T_end::T = 1.0
+    borderLength::T = 0.2
 
     # numerical
     Δx::T = 1e-2
@@ -29,33 +13,53 @@
     Ny::Int = Int(Ly/Δx)
     x::LinRange{T, Int64} = LinRange(0,Lx,Nx)
     y::LinRange{T, Int64} = LinRange(0,Ly,Ny)
-    Wd::Matrix{T} = make_WDiscrete(Δx,h)
 
-    # confining potential around border
-    V::Matrix{T} = make_Vflat(Nx,Ny,Δx,h/2,Wd)
-    ∂xV::Matrix{T} = ∂x(V,Nx,Ny,Δx)
-    ∂yV::Matrix{T} = ∂y(V,Nx,Ny,Δx)
+
+    # global parameters
+    n::T = 0.0          # birth rate
+    σ::T = 0.01          # noise
+    β::T = 0.5          # production function 
+
+    # local technological progress Al
+    hₚ::T = 0.15         # bandwith 
+    WₕᴾM::Matrix{T} = make_WDiscrete(Δx,hₚ)
+    GM::Matrix{T} = G(Nx,Ny,Δx,borderLength,WₕᴾM) 
+    @assert hₚ < borderLength
+
+    # wages   
+    γw::T = 0.01        # speed 
+    
+    # endogenous amenities
+    γEN::T = 0.06       # speed
+    τ::T = 0.2          # share income to amenities
+    φ::T = 0.5          # production function amenities
+    γA::T = 0.1         # intensity congestion 
+
+    # exogenous amenities
+    γES::T = 1.0                                    # speed 
+    AES::Matrix{T} = make_Vflat(Nx,Ny,Δx,hₚ/2,WₕᴾM)  # spatial distribution
+    ∂xAES::Matrix{T} = ∂x(AES,Nx,Ny,Δx)             # precompute ∂x
+    ∂yAES::Matrix{T} = ∂y(AES,Nx,Ny,Δx)             # precompute ∂y
+
 
     # initial condition
-    u₀::Matrix{T} = make_u₀(Nx,Ny,Δx,Lx,Ly)
+    u₀::Matrix{T} = make_u₀(Nx,Ny,Δx,Lx,Ly,WₕᴾM)
 
-    # human capital (optional)
-    β::Float64 = 1.0
-    γ::Float64 = 1.0
-    δ::Float64 = 1.0
-    ϕ::Float64 = 1.0
-    ψ::Float64 = 1.0
 
 end
 
-function make_u₀(Nx,Ny,Δx,Lx,Ly)
+function make_u₀(Nx,Ny,Δx,Lx,Ly,Wd)
     # u₀ = zeros(Nx,Ny)
     # u₀[Int(Nx/2):Int(Nx/2)+10,Int(Nx/2):Int(Nx/2)+10] .= 1
     
     # u₀ = bump([L/4,L/4],0.3,0.5,Nx,Ny,Δx) +   
     #     bump([3/4*L,L/4],0.3,0.5,Nx,Ny,Δx) +
     #     bump([L/2,3/4*L],0.3,1.0,Nx,Ny,Δx)   
-    u₀ = bump([Lx/2,Ly/2],[3.0,0.4],1.0,Nx,Ny,Δx) 
+    # u₀ = bump([Lx/2,Ly/2],[3.0,0.4],1.0,Nx,Ny,Δx) 
+
+    u₀ = bump([Lx/2,Ly/2],[Lx/8,Ly/8],1,Nx,Ny,Δx)
+    u₀ = imfilter(u₀,Wd,Fill(0,u₀))
+    u₀ = u₀ / (sum(u₀)*Δx^2)
     return u₀
 end
 
@@ -75,7 +79,7 @@ function bump(center,r,height,Nx,Ny,Δx)
 end
 
 function make_Vflat(Nx,Ny,Δx,borderLength,Wd)
-    V = -ones(Nx,Ny)
+    V = ones(Nx,Ny)
     borderNpts = ceil(Int,borderLength/Δx)
     V[1:borderNpts,:] .= 0.0
     V[:,1:borderNpts] .= 0.0
@@ -86,14 +90,25 @@ function make_Vflat(Nx,Ny,Δx,borderLength,Wd)
     return V
 end
 
-function W(x)
+function G(Nx,Ny,Δx,borderLength,Wd) 
+    GM = ones(Nx,Ny)
+    borderNpts = ceil(Int,borderLength/Δx) + 10
+    GM[1:borderNpts,:] .= 0.0
+    GM[:,1:borderNpts] .= 0.0
+    GM[end-borderNpts+1:end,:] .= 0.0
+    GM[:,end-borderNpts+1:end] .= 0.0
+    GM = imfilter(GM,Wd,Fill(0,GM))
+    return GM
+end
+
+function Wᴾ(x)
     """ smoothing kernel """
     return norm(x) <= 1 ? 1-norm(x) : 0.0
 end
 
-function W(x,h)
+function Wᴾ(x,h)
     """ rescaled kernel """
-    return 1/h*W(x/h)
+    return 1/h*Wᴾ(x/h)
 end
 
 function make_WDiscrete(Δx,bandwith)
@@ -102,7 +117,7 @@ function make_WDiscrete(Δx,bandwith)
     x = -Npt*Δx:Δx:Npt*Δx
     y = -Npt*Δx:Δx:Npt*Δx
     for i in 1:length(x), j in 1:length(y)
-        Wd[i,j] = W([x[i],y[j]],bandwith)
+        Wd[i,j] = Wᴾ([x[i],y[j]],bandwith)
     end
     return normalize(Wd,1)
 end

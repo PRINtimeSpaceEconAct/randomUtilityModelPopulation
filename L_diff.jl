@@ -1,19 +1,28 @@
 
-function df!(du,u,p,t)
-    @unpack_AD p 
-    Wu = imfilter(u,Wd,Fill(0,u))    
+function df!(dl,l,p,t)
     
-    # du .=   γ₁ * u + γ₂ * u.^2 + 
-    # γd * Δ(u.^δ,p) + γa * (∂x(u .* ∂x(Wu,p),p) +  ∂y(u .* ∂y(Wu,p),p)) +
-    # V_GRD * ( (∂x(u,p)).^2 + (∂y(u,p)).^2 ) + 
-    # V_GRA * ( (∂x(Wu,p)).^2 + (∂y(Wu,p)).^2 ) + 
-    # γᵥ * (∂x(u .* ∂xV,p) +  ∂y(u .* ∂yV,p))
-
-    du .= ( γd * Δ(u,p) 
-    + γa * (∂x(u .* ∂x(Wu,p),p) +  ∂y(u .* ∂y(Wu,p),p))
-    + p.γᵥ * (∂x(u .* ∂xV,p) +  ∂y(u .* ∂yV,p)) )
+    Wₕᴾl = imfilter(l,p.WₕᴾM,Fill(0,l))           # Wₕᴾ * l 
+    Al = p.GM .* Wₕᴾl                             # local technological progress
+    w =  Al .* abs.(l).^(p.β-1) .* (l .> 0 )      # wages
+    Y =  Al .* abs.(l).^p.β                       # production
+    AEN =  (p.τ * abs.(Y)).^p.φ .- p.γA * l       # endogenous amenities 
+    
+    dl .= ( p.σ^2/2 * Δ(l,p) 
+        - p.γw * (∂x(l .* ∂x(w,p),p) .+  ∂y(l .* ∂y(w,p),p))
+        - p.γEN * (∂x(l .* ∂x(AEN,p),p) .+  ∂y(l .* ∂y(AEN,p),p))
+        - p.γES * (∂x(l .* p.∂xAES,p) .+  ∂y(l .* p.∂yAES,p)) 
+        + p.n * l )
     
     # @show t
+
+    # if sum(isfinite.(dl) .== 0) != 0
+    #     @infiltrate 
+        # error("error in dl")
+    # end
+
+    # if sum(l .< 0) != 0 
+    #     @show sum(l .< 0)
+    # end
 end
 
 function Δ(u,p) return Δ(u,p.Nx,p.Ny,p.Δx) end
