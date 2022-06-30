@@ -4,7 +4,7 @@
     # domain
     Lx::T = 1.0
     Ly::T = 1.0
-    T_end::T = 1.0
+    T_end::T = 10.0
     borderLength::T = 0.2
 
     # numerical
@@ -57,7 +57,7 @@ function make_u₀(Nx,Ny,Δx,Lx,Ly,Wd)
     #     bump([L/2,3/4*L],0.3,1.0,Nx,Ny,Δx)   
     # u₀ = bump([Lx/2,Ly/2],[3.0,0.4],1.0,Nx,Ny,Δx) 
 
-    u₀ = bump([Lx/2,Ly/2],[Lx/8,Ly/8],1,Nx,Ny,Δx)
+    u₀ = bump([Lx/2,Ly/2],[Lx/6,Ly/6],1,Nx,Ny,Δx)
     u₀ = imfilter(u₀,Wd,Fill(0,u₀))
     u₀ = u₀ / (sum(u₀)*Δx^2)
     return u₀
