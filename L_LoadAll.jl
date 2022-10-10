@@ -6,6 +6,8 @@ using DifferentialEquations
 using ImageFiltering
 using Parameters
 using PyPlot
+using Statistics
+using StatsBase
 
 using BenchmarkTools
 using Infiltrator
