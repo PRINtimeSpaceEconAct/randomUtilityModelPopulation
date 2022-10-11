@@ -124,7 +124,10 @@ function plotAll(sol,p; t = p.T_end)
     title("Individual utility")
 
     tight_layout()
-    # savefig("pics/RUM$(lpad(string(round(t,digits=1)),4,"0")).png")
+    if !isdir(p.folder_name)
+        mkdir(p.folder_name)
+    end
+    savefig("$(p.folder_name)/RUM$(lpad(string(round(t,digits=1)),4,"0")).png")
     pause(0.01)
 end
 
