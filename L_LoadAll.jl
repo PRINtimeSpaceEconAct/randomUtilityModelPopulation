@@ -12,6 +12,7 @@ using StatsBase
 using BenchmarkTools
 using Infiltrator
 using KernelDensity
+using JLD2
 
 include("L_parameters.jl")
 include("L_diff.jl")

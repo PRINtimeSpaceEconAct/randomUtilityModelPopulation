@@ -23,11 +23,14 @@ function plotSol(sol,p; t_step = 0.1)
     
     t_plot = sol.t[1]:t_step:sol.t[end]
 
-    fig = figure(figsize=(15,10))
+    fig = figure(figsize=(15,10/(p.Nx/p.Ny)))
     T_plot = t_step 
     for t in t_plot
         plotAll(sol,p; t = t)
-        # savefig("pics/RUM$(lpad(string(round(t,digits=1)),4,"0")).png")
+        if !isdir(p.folder_name)
+            mkdir(p.folder_name)
+        end
+        savefig("$(p.folder_name)/RUM$(lpad(string(round(t,digits=1)),4,"0")).png")
     end
 end
 
@@ -62,8 +65,7 @@ function plotFunction(I,p)
 end
 
 function plotAll(sol,p; t = p.T_end)
-    ratio = p.Nx/p.Ny
-    # fig = figure(figsize=(15,10/ratio))
+    # fig = figure(figsize=(15,10/(p.Nx/p.Ny)))
     # fig.clear()
     
     subplots = [231,232,233,234,235,236]

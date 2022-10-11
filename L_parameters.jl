@@ -3,8 +3,8 @@
 
     # domain
     Lx::T = 2.0
-    Ly::T = 2.0
-    T_end::T = 100.0
+    Ly::T = 1.0
+    T_end::T = 1.0
     borderLength::T = 0.2
 
     # numerical
@@ -50,6 +50,10 @@
     # initial condition
     u₀::Matrix{T} = make_u₀(x,y,Δx,borderLength+hₛ,WₕᴾM,ϵTol)
 
+    # saving 
+    folder_name::String = "pics" 
+    show::Bool = true
+    
 
 end
 

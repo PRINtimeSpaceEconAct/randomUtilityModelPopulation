@@ -16,19 +16,30 @@ function main(p)
 
 
     function affect!(integrator)
-        # plotAll(integrator.sol,p,t=integrator.t)
+        if integrator.p.show 
+            plotAll(integrator.sol,p,t=integrator.t)
+        end
         @show integrator.t 
     end
     cb = PeriodicCallback(affect!,T_plot; initial_affect=true)
 
-    # fig = figure(figsize=(15,10/(p.Nx/p.Ny)))
+    if p.show 
+        fig = figure(figsize=(15,10/(p.Nx/p.Ny)))
+    end
     sol = solve(prob,Tsit5(),
         callback=cb)
         # saveat=t_save,
         # progress=true,progress_steps = 1,
         # isoutofdomain = (u,p,t) -> any(x->x<0, u),
 
-    fig.close()
+    if !isdir(p.folder_name)
+        mkdir(p.folder_name)
+    end
+    print("saving...\n")
+    @save "$(p.folder_name)/solp.jld2" sol p
+    print("done\n")
+
     return sol,p
+
 end
 
