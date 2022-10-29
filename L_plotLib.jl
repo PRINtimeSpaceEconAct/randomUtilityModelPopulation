@@ -32,7 +32,7 @@ function plotSol(sol,p; t_step = 0.1)
     
     t_plot = sol.t[1]:t_step:sol.t[end]
 
-    fig = figure(figsize=(15,max(10/(p.Nx/p.Ny),3.0)))
+    global fig = figure(figsize=(15,max(10/(p.Nx/p.Ny),3.0)))
     for t in t_plot
         plotAll(sol,p; t = t)
         if !isdir(p.folder_name)
@@ -46,7 +46,7 @@ function plotSurfSol(sol,p; t_step = 0.1)
 
     t_plot = sol.t[1]:t_step:sol.t[end]
 
-    fig = figure(figsize=(15,10))
+    global fig = figure(figsize=(15,10))
     for t in t_plot
         plotAllSurf(sol,p; t = t)
         if !isdir(p.folder_name)

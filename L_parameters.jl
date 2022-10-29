@@ -2,8 +2,8 @@
 @with_kw struct RUM{T}
 
     # domain
-    Lx::T = 2.0
-    Ly::T = 1.0
+    Lx::T = 4.0
+    Ly::T = 4.0
     T_end::T = 1.0
     borderLength::T = 0.2
 
@@ -21,34 +21,32 @@
     β::T = 0.4          # production function 
 
     # local technological progress Al
-    hₚ::T = 0.15           # bandwith convolution
-    hₛ::T = 0.1            # bandwith sharp mollifier
-    WₕᴾM::Matrix{T} = make_WDiscrete(Δx,hₚ)
+    hₚ::T = 0.3           # bandwith convolution
+    hₛ::T = 0.2           # bandwith sharp mollifier
+    WₕᴾM::Matrix{T} = make_WDiscrete(Δx,hₚ)            
     WₕᴾS::Matrix{T} = make_WDiscrete(Δx,hₛ)            
-    GM::Matrix{T} = make_smoothedBump(x,y,Δx,borderLength,WₕᴾS,ϵTol) 
+    GM::Matrix{T} = make_smoothedBump(x,y,Δx,borderLength+2*hₛ,ones(1,1),0,ϵTol) 
     @assert hₚ < borderLength + hₛ
 
     # wages   
     ϵY::T = 0.01        # minimum threshold up to which l^β becomes linear 
     γw::T = 0.01        # speed 
-    # γw::T = 0.0        # speed 
 
     
     # endogenous amenities
     γEN::T = 0.06       # speed
-    # γEN::T = 0.00       # speed
     τ::T = 0.2          # share income to amenities
     φ::T = 0.5          # production function amenities
     γA::T = 0.2         # intensity congestion 
 
     # exogenous amenities
     γES::T = 10.0                                                        # speed 
-    AES::Matrix{T} =  make_smoothedBump(x,y,Δx,borderLength,WₕᴾS,ϵTol)  # spatial distribution
+    AES::Matrix{T} =  make_smoothedBump(x,y,Δx,borderLength,WₕᴾS,hₛ,ϵTol)  # spatial distribution
     ∂xAES::Matrix{T} = ∂x(AES,Nx,Ny,Δx)                                 # precompute ∂x
     ∂yAES::Matrix{T} = ∂y(AES,Nx,Ny,Δx)                                 # precompute ∂y
 
     # initial condition
-    u₀::Matrix{T} = make_u₀(x,y,Δx,borderLength+hₛ,WₕᴾM,ϵTol)
+    u₀::Matrix{T} = make_u₀(x,y,Δx,borderLength+3*hₛ,WₕᴾM,hₚ,ϵTol)
 
     # saving 
     folder_name::String = "pics" 
@@ -98,26 +96,21 @@ function make_WDiscrete(Δx,bandwith)
     return normalize(Wd,1)
 end
 
-function make_smoothedBump(x,y,Δx,borderLength,Wd,ϵTol) 
+function make_smoothedBump(x,y,Δx,borderLength,Wd,bandwidth,ϵTol) 
+
     Nx = length(x)
     Ny = length(y)
-    borderNpts = ceil(Int,borderLength/Δx)
-    
-    A = ones(Nx,Ny)
-    A[1:borderNpts,:] .= 0.0
-    A[:,1:borderNpts] .= 0.0
-    A[end-borderNpts+1:end,:] .= 0.0
-    A[:,end-borderNpts+1:end] .= 0.0
+    A = bump(borderLength+bandwidth,1.0,Nx,Ny,Δx)
 
     A = imfilter(A,Wd,Fill(0,A))
     A[A .< ϵTol] .= 0
     return A
 end
 
-function make_u₀(x,y,Δx,borderLength,Wd,ϵTol)
+function make_u₀(x,y,Δx,borderLength,Wd,bandwidth,ϵTol)
     Nx = length(x)
     Ny = length(y)
-    u₀ = bump(borderLength,1,Nx,Ny,Δx)
+    u₀ = bump(borderLength+bandwidth,1,Nx,Ny,Δx)
 
     u₀ = imfilter(u₀,Wd,Fill(0,u₀))
     u₀ = u₀ / (sum(u₀)*Δx^2)
@@ -126,10 +119,10 @@ function make_u₀(x,y,Δx,borderLength,Wd,ϵTol)
     return u₀
 end
 
-function make_u₀(x,y,Δx,center::Vector{T},r::Vector{T},Wd,ϵTol) where T
+function make_u₀(x,y,Δx,center::Vector{T},r::Vector{T},Wd,bandwidth,ϵTol) where T
     Nx = length(x)
     Ny = length(y)
-    u₀ = bump(center,r,1,Nx,Ny,Δx)
+    u₀ = bump(center,r-bandwidth,1,Nx,Ny,Δx)
 
     u₀ = imfilter(u₀,Wd,Fill(0,u₀))
     u₀ = u₀ / (sum(u₀)*Δx^2)

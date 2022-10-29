@@ -1,9 +1,9 @@
 # Started on April 6th 2022
 # Cristiano Ricci - cristiano.ricci6@gmail.com
 
-using Logging: global_logger
-using TerminalLoggers: TerminalLogger
-global_logger(TerminalLogger())
+# using Logging: global_logger
+# using TerminalLoggers: TerminalLogger
+# global_logger(TerminalLogger())
 
 include("L_LoadAll.jl")
 
@@ -17,9 +17,9 @@ function main(p)
 
     function affect!(integrator)
         if integrator.p.show 
-            plotAll(integrator.sol,p,t=integrator.t, saveFig = true)
+            plotAllSurf(integrator.sol,p,t=integrator.t, saveFig = true)
         end
-        @show integrator.t 
+        print("t = $(round(integrator.t,digits=2)), mass = $(round(sum(integrator.u),digits=1))\n")
     end
     cb = PeriodicCallback(affect!,T_plot; initial_affect=true)
 
@@ -27,8 +27,8 @@ function main(p)
         fig = figure(figsize=(15,max(10/(p.Nx/p.Ny),3.0)))
     end
     sol = solve(prob,Tsit5(),
+        saveat=t_save,
         callback=cb)
-        # saveat=t_save,
         # progress=true,progress_steps = 1,
         # isoutofdomain = (u,p,t) -> any(x->x<0, u),
 
