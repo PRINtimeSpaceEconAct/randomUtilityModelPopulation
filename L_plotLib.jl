@@ -78,10 +78,10 @@ function plotAllSurf(sol,p; t = p.T_end, saveFig = false)
     Wₕᴾl = imfilter(l,p.WₕᴾM,Fill(0,l))           # Wₕᴾ * l 
     Wₕᴾl[Wₕᴾl .< p.ϵTol] .= 0
 
-    Al = p.GM .* Wₕᴾl                                   # local technological progress
-    w =  Al .* fw.(abs.(l),p.ϵY,p.β)                    # wages
-    Y =  Al .* fY.(abs.(l),p.ϵY,p.β)                    # production
-    AEN =  (p.τ^p.φ) * fY.(Y,p.ϵY,p.φ) .- p.γA * l      # endogenous amenities 
+    Al = p.GM .* Wₕᴾl                                           # local technological progress
+    w =  Al .* fw.(abs.(l),p.ϵY,p.β)                            # wages
+    Y =  Al .* fY.(abs.(l),p.ϵY,p.β)                            # production
+    AEN =  p.GM .* ((p.τ^p.φ) * fY.(Y,p.ϵY,p.φ) .- p.γA * l)    # endogenous amenities 
     Utility = p.γw * w + p.γEN * AEN
 
     suptitle("t = $(round(t,digits=3))")
@@ -116,7 +116,7 @@ function plotAllSurf(sol,p; t = p.T_end, saveFig = false)
     # colorbar(shrink=0.7)
     title("Individual utility")
 
-    tight_layout()
+    # tight_layout()
     if !isdir(p.folder_name)
         mkdir(p.folder_name)
     end
@@ -149,10 +149,10 @@ function plotAll(sol,p; t = p.T_end, saveFig = false)
     Wₕᴾl = imfilter(l,p.WₕᴾM,Fill(0,l))           # Wₕᴾ * l 
     Wₕᴾl[Wₕᴾl .< p.ϵTol] .= 0
 
-    Al = p.GM .* Wₕᴾl                                   # local technological progress
-    w =  Al .* fw.(abs.(l),p.ϵY,p.β)                    # wages
-    Y =  Al .* fY.(abs.(l),p.ϵY,p.β)                    # production
-    AEN =  (p.τ^p.φ) * fY.(Y,p.ϵY,p.φ) .- p.γA * l      # endogenous amenities 
+    Al = p.GM .* Wₕᴾl                                           # local technological progress
+    w =  Al .* fw.(abs.(l),p.ϵY,p.β)                            # wages
+    Y =  Al .* fY.(abs.(l),p.ϵY,p.β)                            # production
+    AEN =  p.GM .* ((p.τ^p.φ) * fY.(Y,p.ϵY,p.φ) .- p.γA * l)    # endogenous amenities 
     Utility = p.γw * w + p.γEN * AEN
 
     suptitle("t = $(round(t,digits=3))")
@@ -187,7 +187,7 @@ function plotAll(sol,p; t = p.T_end, saveFig = false)
     # colorbar(shrink=0.7)
     title("Individual utility")
 
-    tight_layout()
+    # tight_layout()
     if !isdir(p.folder_name)
         mkdir(p.folder_name)
     end

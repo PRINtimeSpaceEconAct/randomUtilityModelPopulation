@@ -17,14 +17,14 @@ function main(p)
 
     function affect!(integrator)
         if integrator.p.show 
-            plotAllSurf(integrator.sol,p,t=integrator.t, saveFig = true)
+            plotAll(integrator.sol,p,t=integrator.t, saveFig = true)
         end
         print("t = $(round(integrator.t,digits=2)), mass = $(round(sum(integrator.u),digits=1))\n")
     end
     cb = PeriodicCallback(affect!,T_plot; initial_affect=true)
 
     if p.show 
-        fig = figure(figsize=(15,max(10/(p.Nx/p.Ny),3.0)))
+        global fig = figure(figsize=(15,max(10/(p.Nx/p.Ny),3.0)))
     end
     sol = solve(prob,Tsit5(),
         saveat=t_save,

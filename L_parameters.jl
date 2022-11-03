@@ -16,9 +16,10 @@
     y::LinRange{T, Int64} = LinRange(0,Ly,Ny)
 
     # global parameters
+    mass::T = π * 1.0   # total mass
     n::T = 0.0          # birth rate
     σ::T = 0.1          # noise
-    β::T = 0.4          # production function 
+    β::T = 0.6          # production function 
 
     # local technological progress Al
     hₚ::T = 0.3           # bandwith convolution
@@ -46,7 +47,7 @@
     ∂yAES::Matrix{T} = ∂y(AES,Nx,Ny,Δx)                                 # precompute ∂y
 
     # initial condition
-    u₀::Matrix{T} = make_u₀(x,y,Δx,borderLength+3*hₛ,WₕᴾM,hₚ,ϵTol)
+    u₀::Matrix{T} = make_u₀(x,y,Δx,borderLength+3*hₛ,WₕᴾM,hₚ,mass,ϵTol)
 
     # saving 
     folder_name::String = "pics" 
@@ -107,25 +108,25 @@ function make_smoothedBump(x,y,Δx,borderLength,Wd,bandwidth,ϵTol)
     return A
 end
 
-function make_u₀(x,y,Δx,borderLength,Wd,bandwidth,ϵTol)
+function make_u₀(x,y,Δx,borderLength,Wd,bandwidth,mass,ϵTol)
     Nx = length(x)
     Ny = length(y)
     u₀ = bump(borderLength+bandwidth,1,Nx,Ny,Δx)
 
     u₀ = imfilter(u₀,Wd,Fill(0,u₀))
-    u₀ = u₀ / (sum(u₀)*Δx^2)
+    u₀ = u₀ / (sum(u₀)*Δx^2) * mass
     u₀[u₀ .< ϵTol] .= 0
 
     return u₀
 end
 
-function make_u₀(x,y,Δx,center::Vector{T},r::Vector{T},Wd,bandwidth,ϵTol) where T
+function make_u₀(x,y,Δx,center::Vector{T},r::Vector{T},Wd,bandwidth,mass,ϵTol) where T
     Nx = length(x)
     Ny = length(y)
     u₀ = bump(center,r-bandwidth,1,Nx,Ny,Δx)
 
     u₀ = imfilter(u₀,Wd,Fill(0,u₀))
-    u₀ = u₀ / (sum(u₀)*Δx^2)
+    u₀ = u₀ / (sum(u₀)*Δx^2) * mass
     u₀[u₀ .< ϵTol] .= 0
 
     return u₀
