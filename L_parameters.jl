@@ -24,7 +24,6 @@
     # local technological progress Al
     hₚ::T = 0.3           # bandwith convolution
     hₛ::T = 0.2           # bandwith sharp mollifier
-    cAl::T = 0.5         # scale factor technological progress
     WₕᴾM::Matrix{T} = make_WDiscrete(Δx,hₚ)            
     WₕᴾS::Matrix{T} = make_WDiscrete(Δx,hₛ)            
     GM::Matrix{T} = make_smoothedBump(x,y,Δx,borderLength+2*hₛ,ones(1,1),0,ϵTol) 

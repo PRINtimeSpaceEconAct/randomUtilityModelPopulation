@@ -4,7 +4,7 @@ function df!(dl,l,p,t)
     Wₕᴾl = imfilter(l,p.WₕᴾM,Fill(0,l))           # Wₕᴾ * l 
     Wₕᴾl[Wₕᴾl .< p.ϵTol] .= 0
 
-    Al = p.cAl * p.GM .* Wₕᴾl                                           # local technological progress
+    Al = p.GM .* Wₕᴾl                                           # local technological progress
     w =  Al .* fw.(abs.(l),p.ϵY,p.β)                            # wages
     Y =  Al .* fY.(abs.(l),p.ϵY,p.β)                            # production
     AEN =  p.GM .* ((p.τ^p.φ) * fY.(Y,p.ϵY,p.φ) .- p.γA * l)    # endogenous amenities 
