@@ -4,14 +4,13 @@ function df!(dl,l,p,t)
     Wₕᴾl = imfilter(l,p.WₕᴾM,Fill(0,l))           # Wₕᴾ * l 
     Wₕᴾl[Wₕᴾl .< p.ϵTol] .= 0
 
-    Al = p.GM .* Wₕᴾl                                           # local technological progress
+    Al = p.cAl * p.GM .* Wₕᴾl                                           # local technological progress
     w =  Al .* fw.(abs.(l),p.ϵY,p.β)                            # wages
     Y =  Al .* fY.(abs.(l),p.ϵY,p.β)                            # production
     AEN =  p.GM .* ((p.τ^p.φ) * fY.(Y,p.ϵY,p.φ) .- p.γA * l)    # endogenous amenities 
    
     ∂xU = ∂x(p.γw * w + p.γEN * AEN,p) + p.γES * p.∂xAES
     ∂yU = ∂y(p.γw * w + p.γEN * AEN,p) + p.γES * p.∂yAES
-
 
     dl .= ( p.σ^2/2 * Δ(l,p)
         - ∂x(l .* ∂xU,p) - ∂y(l .* ∂yU,p)

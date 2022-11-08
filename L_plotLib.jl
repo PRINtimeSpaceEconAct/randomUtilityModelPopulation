@@ -19,13 +19,17 @@ function plotInitialProjection(p)
 
 end
 
-function plotFunction(I,p)
+function plotFunction(I,p; surfPlot=false)
     ratio = p.Nx/p.Ny
     fig = figure(figsize=(15,10/ratio))
-
-    imshow(I',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    colorbar()
-
+    if surfPlot == false
+        imshow(I',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+        colorbar()
+    else
+        xGrid = repeat(p.x,1,p.Ny)
+        yGrid = repeat(p.y',p.Nx,1)
+        surf(xGrid,yGrid,I,rstride=1,cstride=1,facecolors=get_cmap("jet")(I))
+    end
 end
 
 function plotSol(sol,p; t_step = 0.1)
@@ -78,7 +82,7 @@ function plotAllSurf(sol,p; t = p.T_end, saveFig = false)
     Wₕᴾl = imfilter(l,p.WₕᴾM,Fill(0,l))           # Wₕᴾ * l 
     Wₕᴾl[Wₕᴾl .< p.ϵTol] .= 0
 
-    Al = p.GM .* Wₕᴾl                                           # local technological progress
+    Al = p.cAl * p.GM .* Wₕᴾl                                           # local technological progress
     w =  Al .* fw.(abs.(l),p.ϵY,p.β)                            # wages
     Y =  Al .* fY.(abs.(l),p.ϵY,p.β)                            # production
     AEN =  p.GM .* ((p.τ^p.φ) * fY.(Y,p.ϵY,p.φ) .- p.γA * l)    # endogenous amenities 
@@ -149,7 +153,7 @@ function plotAll(sol,p; t = p.T_end, saveFig = false)
     Wₕᴾl = imfilter(l,p.WₕᴾM,Fill(0,l))           # Wₕᴾ * l 
     Wₕᴾl[Wₕᴾl .< p.ϵTol] .= 0
 
-    Al = p.GM .* Wₕᴾl                                           # local technological progress
+    Al = p.cAl * p.GM .* Wₕᴾl                                           # local technological progress
     w =  Al .* fw.(abs.(l),p.ϵY,p.β)                            # wages
     Y =  Al .* fY.(abs.(l),p.ϵY,p.β)                            # production
     AEN =  p.GM .* ((p.τ^p.φ) * fY.(Y,p.ϵY,p.φ) .- p.γA * l)    # endogenous amenities 
