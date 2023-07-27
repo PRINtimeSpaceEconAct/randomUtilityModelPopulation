@@ -2,9 +2,9 @@
 @with_kw struct RUM{T}
 
     # domain
-    Lx::T = 4.0
+    Lx::T = 8.0
     Ly::T = 4.0
-    T_end::T = 40.0
+    T_end::T = 1.0
     borderLength::T = 0.2
 
     # numerical
@@ -26,7 +26,8 @@
     hₛ::T = 0.2           # bandwith sharp mollifier
     WₕᴾM::Matrix{T} = make_WDiscrete(Δx,hₚ)            
     WₕᴾS::Matrix{T} = make_WDiscrete(Δx,hₛ)            
-    GM::Matrix{T} = make_smoothedBump(x,y,Δx,borderLength+2*hₛ,ones(1,1),0,ϵTol) 
+    # GM::Matrix{T} = make_smoothedBump(x,y,Δx,borderLength+2*hₛ,ones(1,1),0,ϵTol) 
+    GM::Matrix{T} = make_GCross(x,y,Δx,1.0,WₕᴾS,ϵTol)
     @assert hₚ < borderLength + hₛ
 
     # wages   
@@ -49,7 +50,7 @@
     u₀::Matrix{T} = make_u₀(x,y,Δx,borderLength+3.25*hₛ,WₕᴾM,hₚ,mass,ϵTol)
 
     # saving 
-    folder_name::String = "Lx=4,Ly=4,sigma005,InitialCondition" 
+    folder_name::String = "Lx=8,Ly=4,GCross" 
     show::Bool = false
     
 
@@ -97,7 +98,6 @@ function make_WDiscrete(Δx,bandwith)
 end
 
 function make_smoothedBump(x,y,Δx,borderLength,Wd,bandwidth,ϵTol) 
-
     Nx = length(x)
     Ny = length(y)
     A = bump(borderLength+bandwidth,1.0,Nx,Ny,Δx)
@@ -105,6 +105,25 @@ function make_smoothedBump(x,y,Δx,borderLength,Wd,bandwidth,ϵTol)
     A = imfilter(A,Wd,Fill(0,A))
     A[A .< ϵTol] .= 0
     return A
+end
+
+function make_GCross(x,y,Δx,crossWidth,Wd,ϵTol)
+    Nx = length(x)
+    Ny = length(y)
+
+    crossWidthNpt = floor(Int,crossWidth/Δx)
+    crossNxLeft = round(Int,(Nx-crossWidthNpt)/2)
+    crossNyLeft = round(Int,(Ny-crossWidthNpt)/2)
+    G = ones(Nx,Ny)
+    G[1:crossNxLeft,1:crossNyLeft] .= 0
+    G[crossNxLeft+crossWidthNpt:Nx,1:crossNyLeft] .= 0
+    G[1:crossNxLeft,crossNyLeft+crossWidthNpt:Ny] .= 0
+    G[crossNxLeft+crossWidthNpt:Nx,crossNyLeft+crossWidthNpt:Ny] .= 0
+
+    G = imfilter(G,Wd,Fill(0,G))
+    G[G .< ϵTol] .= 0
+
+    return G
 end
 
 function make_u₀(x,y,Δx,borderLength,Wd,bandwidth,mass,ϵTol)
