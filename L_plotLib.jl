@@ -21,7 +21,7 @@ end
 
 function plotFunction(I,p; surfPlot=false)
     ratio = p.Nx/p.Ny
-    fig = figure(figsize=(15,10/ratio))
+    fig = figure(figsize=(10,10))
     if surfPlot == false
         imshow(I',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
         colorbar()
@@ -29,7 +29,11 @@ function plotFunction(I,p; surfPlot=false)
         xGrid = repeat(p.x,1,p.Ny)
         yGrid = repeat(p.y',p.Nx,1)
         surf(xGrid,yGrid,I,rstride=1,cstride=1,facecolors=get_cmap("jet")(I))
+        ax = gca()
+        ax.set_yticks(0:p.Ly)
+        ax.set_box_aspect((p.Lx,p.Ly,4))
     end
+    # tight_layout()
 end
 
 function plotSol(sol,p; t_step = 0.1)
@@ -159,7 +163,7 @@ function plotAll(sol,p; t = p.T_end, saveFig = false)
     AEN =  p.GM .* ((p.τ^p.φ) * fY.(Y,p.ϵY,p.φ) .- p.γA * l)    # endogenous amenities 
     Utility = p.γw * w + p.γEN * AEN
 
-    suptitle("t = $(round(t,digits=3))")
+    # suptitle("t = $(round(t,digits=3))")
 
     subplot(231)
     im = imshow((l)',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
@@ -202,176 +206,67 @@ function plotAll(sol,p; t = p.T_end, saveFig = false)
     end
 end
 
-
-
-
-
-# function histSignificative(l,Img,p; lCut = 1e-2, ICut = 0.0, nb = 20, titleStr=" ", pesi=false)
-#     # l = matrix of worker distribution
-#     # I = matrix of distribution to hist
-#     # lCut = lower level where to cut l
-#     # ICut = lower level where to cut further Img
-
-#     i = findall(l .> lCut)
-#     print("keeping $(sum(l[i])*p.Δx^2) total mass\n")
-#     l = l[i]
-#     Img = Img[i]
-
-#     i = findall(Img .> ICut)
-#     l = l[i]
-#     Img = Img[i]
-
-#     if pesi == true
-#         minl = minimum(l)
-#         weigh = round.(Int,l/minl)
-#         ImgTmp = [Img[i]*ones(weigh[i]) for i in 1:length(weigh)]
-#         Img = vcat(ImgTmp...)
-#     end
+function saveAllPaper()
+    # @load "Lx=4,Ly=4,sigma005,h039/solp.jld2"
     
-    
-#     hist(Img,density=true,nb)
-#     density = kde(Img)
-#     i = findall((density.x .> minimum(Img)) .& (density.x .< maximum(Img)))
-#     xval = density.x[i]
-#     val = density.density[i]
-#     plot(xval,val)
+    global fig = figure(figsize=(15,max(10/(p.Nx/p.Ny),3.0)))
+    plotAll(sol,p,t=185; saveFig=true)
+    tight_layout()
+    savefig("allt=185h=03.eps")
+    # close()
 
-    
-#     title(titleStr)
-#     tight_layout() 
-# end
+    # plotFunction(sol(1),p;surfPlot =true)
+    # savefig("single0.eps")
+    # close()
+    # plotFunction(sol(0.5),p;surfPlot =true)
+    # savefig("single05.eps")
+    # close()
+    # plotFunction(sol(1),p;surfPlot =true)
+    # savefig("single1.eps")
+    # close()
+    # plotFunction(sol(5),p;surfPlot =true)
+    # savefig("single5.eps")
+    # close()
+    # plotFunction(sol(10),p;surfPlot =true)
+    # savefig("single10.eps")
+    # close()
+    # plotFunction(sol(20),p;surfPlot =true)
+    # savefig("single20.eps")
+    # close()
 
-# function spatMean(l,p)
-#     l1 = vec(sum(l,dims=2)*p.Δx)
-#     m1 = sum(l1 .* p.x) * p.Δx
+    plotFunction(sol(181),p;surfPlot =true)
+    savefig("t=181h=0.3.eps")
+    close()
+    plotFunction(sol(182),p;surfPlot =true)
+    savefig("t=182h=0.3.eps")
+    close()
+    plotFunction(sol(183),p;surfPlot =true)
+    savefig("t=183h=0.3.eps")
+    close()
+    plotFunction(sol(184),p;surfPlot =true)
+    savefig("t=184h=0.3.eps")
+    close()
+    plotFunction(sol(185),p;surfPlot =true)
+    savefig("t=185h=0.3.eps")
+    close()
 
-#     l2 = vec(sum(l,dims=1)*p.Δx)
-#     m2 = sum(l2 .* p.y) * p.Δx
+    plotFunction(sol(0),p;surfPlot =true)
+    savefig("t=0ViaEmilia.eps")
+    close()
+    plotFunction(sol(10),p;surfPlot =true)
+    savefig("t=10ViaEmilia.eps")
+    close()
+    plotFunction(sol(20),p;surfPlot =true)
+    savefig("t=20ViaEmilia.eps")
+    close()
+    plotFunction(sol(100),p;surfPlot =true)
+    savefig("t=100ViaEmilia.eps")
+    close()
 
-#     return [m1,m2]
-# end
-
-# function moment(l,p,order)
-#     n = order
-#     m = spatMean(l,p)
-
-#     l1 = vec(sum(l,dims=2)*p.Δx)
-#     l2 = vec(sum(l,dims=1)*p.Δx)
-
-#     mn1 = sum(l1 .* (p.x .- m[1]).^n ) * p.Δx
-#     mn2 = sum(l2 .* (p.y .- m[2]).^n ) * p.Δx
-
-#     return [mn1,mn2]
-# end
+end
 
 
-# function plotPane(sol,p; t_save = [0.01,0.1,1.0,20.0,40.0],preStr="")
-#     # plotPane(sol,p,preStr="beta05")
-#     ioff()
-#     for t in t_save
-#         plotAll(sol,p; t = t)
-#         savefig(preStr * "t" * string(t) * ".pdf")
-#     end
-# end
 
-# function plotHist(sol,p;preStr="")
-#     ioff()
-
-#     l = sol[end]
-
-#     Wₕᴾl = imfilter(l,p.WₕᴾM,Fill(0,l))           # Wₕᴾ * l 
-#     Al = p.GM .* Wₕᴾl                             # local technological progress
-#     w =  Al .* abs.(l).^(p.β-1) .* (l .> 0 )      # wages
-#     Y =  Al .* abs.(l).^p.β                       # production
-#     AEN =  (p.τ * abs.(Y)).^p.φ .- p.γA * l
-#     Utility = p.γw * w + p.γEN * AEN
-
-#     fig = figure()
-#     histSignificative(l,l,p, titleStr="Workers")
-#     savefig(preStr * "L.pdf")
-#     close(fig)
-
-#     fig = figure()
-#     histSignificative(l,AEN,p, titleStr="Endogenous amenities")
-#     savefig(preStr * "AEN.pdf")
-#     close(fig)
-
-#     fig = figure()
-#     histSignificative(l,Al,p, titleStr="Technological progress")
-#     savefig(preStr * "Al.pdf")
-#     close(fig)
-
-#     fig = figure()
-#     histSignificative(l,Y,p, titleStr="Total income")
-#     savefig(preStr * "totalIncome.pdf")
-#     close(fig)
-
-#     fig = figure()
-#     histSignificative(l,w,p, titleStr="Wages"; pesi = true)
-#     savefig(preStr * "wages.pdf")
-#     close(fig)
-
-#     fig = figure()
-#     histSignificative(l,Utility,p, ICut = -Inf, titleStr="Utility"; pesi = true)
-#     savefig(preStr * "utility.pdf")
-#     close(fig)
-
-# end
-
-# function relevantValuesSummary(sol,p; lCut = 1e-2)
-#     l = sol[end]
-    
-#     Wₕᴾl = imfilter(l,p.WₕᴾM,Fill(0,l))           # Wₕᴾ * l 
-#     Al = p.GM .* Wₕᴾl                             # local technological progress
-#     w =  Al .* abs.(l).^(p.β-1) .* (l .> 0 )      # wages
-#     Y =  Al .* abs.(l).^p.β                       # production
-#     AEN =  (p.τ * abs.(Y)).^p.φ .- p.γA * l
-#     Utility = p.γw * w + p.γEN * AEN
-
-#     i = findall(l .> lCut)
-#     println("keeping $(sum(l[i])*p.Δx^2) total mass")
-#     Area = length(i)*p.Δx^2
-#     l = l[i]
-#     Al = Al[i]
-#     w = w[i]
-#     Y = Y[i]
-#     AEN = AEN[i]
-#     Utility = Utility[i]
-
-#     println("Area = $(round(Area,digits=3))")
-#     println("Densità = $(round(1/Area,digits=3))")
-
-#     println("mean w = $(round(mean(w,StatsBase.weights(l)),digits=3))")
-#     println("sum Y = $(round(sum(Y),digits=3))")
-#     println("mean Al = $(round(mean(Al),digits=3))")
-#     println("mean AEN = $(round(mean(AEN),digits=3))")
-#     println("mean Utility = $(round(mean(Utility,StatsBase.weights(l)),digits=3))")
-
-#     println("std w = $(round(std(w,StatsBase.weights(l)),digits=3))")
-#     println("std Y = $(round(std(Y),digits=3))")
-#     println("std Al = $(round(std(Al),digits=3))")
-#     println("std AEN = $(round(std(AEN),digits=3))")
-#     println("std Utility = $(round(std(Utility,StatsBase.weights(l)),digits=3))")
-
-#     println("skewness w = $(round(StatsBase.skewness(w,StatsBase.weights(l)),digits=3))")
-#     println("skewness Y = $(round(StatsBase.skewness(Y),digits=3))")
-#     println("skewness Al = $(round(StatsBase.skewness(Al),digits=3))")
-#     println("skewness AEN = $(round(StatsBase.skewness(AEN),digits=3))")
-#     println("skewness Utility = $(round(StatsBase.skewness(Utility,StatsBase.weights(l)),digits=3))")
-
-#     println("kurtosis w = $(round(StatsBase.kurtosis(w,StatsBase.weights(l)),digits=3))")
-#     println("kurtosis Y = $(round(StatsBase.kurtosis(Y),digits=3))")
-#     println("kurtosis Al = $(round(StatsBase.kurtosis(Al),digits=3))")
-#     println("kurtosis AEN = $(round(StatsBase.kurtosis(AEN),digits=3))")
-#     println("kurtosis Utility = $(round(StatsBase.kurtosis(Utility,StatsBase.weights(l)),digits=3))")
-
-#     println("90/100 w = $(round(quantile(w,StatsBase.weights(l),0.9)/quantile(w,StatsBase.weights(l),0.1),digits=3))")
-#     println("90/100 Y = $(round(quantile(Y,0.9)/quantile(Y,0.1),digits=3))")
-#     println("90/100 Al = $(round(quantile(Al,0.9)/quantile(Al,0.1),digits=3))")
-#     println("90/100 AEN = $(round(quantile(AEN,0.9)/quantile(AEN,0.1),digits=3))")
-#     println("90/100 Utility = $(round(quantile(Utility,StatsBase.weights(l),0.9)/quantile(Utility,StatsBase.weights(l),0.1),digits=3))")
-    
-# end
 
 
 

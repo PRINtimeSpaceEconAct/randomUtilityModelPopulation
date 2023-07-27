@@ -4,7 +4,7 @@
     # domain
     Lx::T = 4.0
     Ly::T = 4.0
-    T_end::T = 1.0
+    T_end::T = 40.0
     borderLength::T = 0.2
 
     # numerical
@@ -18,7 +18,7 @@
     # global parameters
     mass::T = π * 1.0   # total mass
     n::T = 0.0          # birth rate
-    σ::T = 0.1          # noise
+    σ::T = 0.05          # noise
     β::T = 0.6          # production function 
 
     # local technological progress Al
@@ -46,11 +46,11 @@
     ∂yAES::Matrix{T} = ∂y(AES,Nx,Ny,Δx)                                 # precompute ∂y
 
     # initial condition
-    u₀::Matrix{T} = make_u₀(x,y,Δx,borderLength+3*hₛ,WₕᴾM,hₚ,mass,ϵTol)
+    u₀::Matrix{T} = make_u₀(x,y,Δx,borderLength+3.25*hₛ,WₕᴾM,hₚ,mass,ϵTol)
 
     # saving 
-    folder_name::String = "pics" 
-    show::Bool = true
+    folder_name::String = "Lx=4,Ly=4,sigma005,InitialCondition" 
+    show::Bool = false
     
 
 end
