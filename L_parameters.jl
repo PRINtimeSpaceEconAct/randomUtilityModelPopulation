@@ -2,9 +2,9 @@
 @with_kw struct RUM{T}
 
     # domain
-    Lx::T = 8.0
-    Ly::T = 4.0
-    T_end::T = 1.0
+    Lx::T = 6.0
+    Ly::T = 6.0
+    T_end::T = 120.0
     borderLength::T = 0.2
 
     # numerical
@@ -47,10 +47,12 @@
     ∂yAES::Matrix{T} = ∂y(AES,Nx,Ny,Δx)                                 # precompute ∂y
 
     # initial condition
-    u₀::Matrix{T} = make_u₀(x,y,Δx,borderLength+3.25*hₛ,WₕᴾM,hₚ,mass,ϵTol)
-
+    # u₀::Matrix{T} = make_u₀Flat(x,y,Δx,borderLength+3.25*hₛ,WₕᴾM,hₚ,mass,ϵTol)
+    u₀::Matrix{T} = make_u₀Gauss(x,y,[Lx/2,Ly/2],0.9)
+    # u₀::Matrix{T} = make_GCross(x,y,Δx,1.0,WₕᴾS,ϵTol)
+    
     # saving 
-    folder_name::String = "Lx=8,Ly=4,GCross" 
+    folder_name::String = "Lx=6,Ly=6,GCross,u0Gaussian" 
     show::Bool = false
     
 
@@ -126,7 +128,7 @@ function make_GCross(x,y,Δx,crossWidth,Wd,ϵTol)
     return G
 end
 
-function make_u₀(x,y,Δx,borderLength,Wd,bandwidth,mass,ϵTol)
+function make_u₀Flat(x,y,Δx,borderLength,Wd,bandwidth,mass,ϵTol)
     Nx = length(x)
     Ny = length(y)
     u₀ = bump(borderLength+bandwidth,1,Nx,Ny,Δx)
@@ -138,17 +140,25 @@ function make_u₀(x,y,Δx,borderLength,Wd,bandwidth,mass,ϵTol)
     return u₀
 end
 
-function make_u₀(x,y,Δx,center::Vector{T},r::Vector{T},Wd,bandwidth,mass,ϵTol) where T
+function make_u₀Gauss(x,y,center,sd)
+    X = MvNormal(center,sd^2*I(2))
     Nx = length(x)
     Ny = length(y)
-    u₀ = bump(center,r-bandwidth,1,Nx,Ny,Δx)
-
-    u₀ = imfilter(u₀,Wd,Fill(0,u₀))
-    u₀ = u₀ / (sum(u₀)*Δx^2) * mass
-    u₀[u₀ .< ϵTol] .= 0
-
+    u₀ = reshape(pdf(X,[[xi,yi] for xi in x for yi in y]),Nx,Ny)
     return u₀
 end
+
+# function make_u₀(x,y,Δx,center::Vector{T},r::Vector{T},Wd,bandwidth,mass,ϵTol) where T
+#     Nx = length(x)
+#     Ny = length(y)
+#     u₀ = bump(center,r-bandwidth,1,Nx,Ny,Δx)
+
+#     u₀ = imfilter(u₀,Wd,Fill(0,u₀))
+#     u₀ = u₀ / (sum(u₀)*Δx^2) * mass
+#     u₀[u₀ .< ϵTol] .= 0
+
+#     return u₀
+# end
 
 function bump(borderLength::T,height,Nx,Ny,Δx) where T
     cube = zeros(Nx,Ny)
