@@ -48,12 +48,12 @@
 
     # initial condition
     # u₀::Matrix{T} = make_u₀Flat(x,y,Δx,borderLength+3.25*hₛ,WₕᴾM,hₚ,mass,ϵTol)
-    u₀::Matrix{T} = make_u₀Gauss(x,y,[Lx/2,Ly/2],0.9)
-    # u₀::Matrix{T} = make_GCross(x,y,Δx,1.0,WₕᴾS,ϵTol)
+    # u₀::Matrix{T} = make_u₀Gauss(x,y,[Lx/2,Ly/2],0.9)
+    u₀::Matrix{T} = make_u₀Cross(x,y,Δx,1.0,WₕᴾS,ϵTol,2*borderLength)
     
     # saving 
-    folder_name::String = "Lx=6,Ly=6,GCross,u0Gaussian" 
-    show::Bool = false
+    folder_name::String = "Lx=6,Ly=6,GCross,u0Cross" 
+    show::Bool = true
     
 
 end
@@ -121,6 +121,30 @@ function make_GCross(x,y,Δx,crossWidth,Wd,ϵTol)
     G[crossNxLeft+crossWidthNpt:Nx,1:crossNyLeft] .= 0
     G[1:crossNxLeft,crossNyLeft+crossWidthNpt:Ny] .= 0
     G[crossNxLeft+crossWidthNpt:Nx,crossNyLeft+crossWidthNpt:Ny] .= 0
+
+    G = imfilter(G,Wd,Fill(0,G))
+    G[G .< ϵTol] .= 0
+
+    return G
+end
+
+function make_u₀Cross(x,y,Δx,crossWidth,Wd,ϵTol,borderLength)
+    Nx = length(x)
+    Ny = length(y)
+    rNpts = ceil(Int,borderLength/Δx)
+
+    crossWidthNpt = floor(Int,crossWidth/Δx)
+    crossNxLeft = round(Int,(Nx-crossWidthNpt)/2)
+    crossNyLeft = round(Int,(Ny-crossWidthNpt)/2)
+    G = ones(Nx,Ny)
+    G[1:crossNxLeft,1:crossNyLeft] .= 0
+    G[crossNxLeft+crossWidthNpt:Nx,1:crossNyLeft] .= 0
+    G[1:crossNxLeft,crossNyLeft+crossWidthNpt:Ny] .= 0
+    G[crossNxLeft+crossWidthNpt:Nx,crossNyLeft+crossWidthNpt:Ny] .= 0
+    G[1:rNpts,:] .= 0
+    G[:,1:rNpts] .= 0
+    G[(Nx-rNpts):Nx,:] .= 0
+    G[:,(Ny-rNpts):Ny] .= 0
 
     G = imfilter(G,Wd,Fill(0,G))
     G[G .< ϵTol] .= 0
