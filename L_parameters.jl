@@ -49,8 +49,9 @@
     # initial condition
     # u₀::Matrix{T} = make_u₀Flat(x,y,Δx,borderLength+3.25*hₛ,WₕᴾM,hₚ,mass,ϵTol)
     # u₀::Matrix{T} = make_u₀Gauss(x,y,[Lx/2,Ly/2],0.9)
-    u₀::Matrix{T} = make_u₀Cross(x,y,Δx,1.0,WₕᴾS,ϵTol,2*borderLength)
-    
+    # u₀::Matrix{T} = make_u₀Cross(x,y,Δx,1.0,WₕᴾS,ϵTol,1.0)
+    u₀::Matrix{T} = make_u₀GaussCross(x,y,Δx,1.0,WₕᴾS,ϵTol,1.0,[Lx/2,Ly/2],1.0)
+
     # saving 
     folder_name::String = "Lx=6,Ly=6,GCross,u0Cross" 
     show::Bool = true
@@ -171,6 +172,36 @@ function make_u₀Gauss(x,y,center,sd)
     u₀ = reshape(pdf(X,[[xi,yi] for xi in x for yi in y]),Nx,Ny)
     return u₀
 end
+
+function make_u₀GaussCross(x,y,Δx,crossWidth,Wd,ϵTol,borderLength,center,sd,)
+    X = MvNormal(center,sd^2*I(2))
+    Nx = length(x)
+    Ny = length(y)
+    u₀ = reshape(pdf(X,[[xi,yi] for xi in x for yi in y]),Nx,Ny)
+
+    Nx = length(x)
+    Ny = length(y)
+    rNpts = ceil(Int,borderLength/Δx)
+
+    crossWidthNpt = floor(Int,crossWidth/Δx)
+    crossNxLeft = round(Int,(Nx-crossWidthNpt)/2)
+    crossNyLeft = round(Int,(Ny-crossWidthNpt)/2)
+    u₀[1:crossNxLeft,1:crossNyLeft] .= 0
+    u₀[crossNxLeft+crossWidthNpt:Nx,1:crossNyLeft] .= 0
+    u₀[1:crossNxLeft,crossNyLeft+crossWidthNpt:Ny] .= 0
+    u₀[crossNxLeft+crossWidthNpt:Nx,crossNyLeft+crossWidthNpt:Ny] .= 0
+    u₀[1:rNpts,:] .= 0
+    u₀[:,1:rNpts] .= 0
+    u₀[(Nx-rNpts):Nx,:] .= 0
+    u₀[:,(Ny-rNpts):Ny] .= 0
+
+    u₀ = imfilter(u₀,Wd,Fill(0,u₀))
+    u₀[u₀ .< ϵTol] .= 0
+
+    return u₀
+
+end
+
 
 # function make_u₀(x,y,Δx,center::Vector{T},r::Vector{T},Wd,bandwidth,mass,ϵTol) where T
 #     Nx = length(x)
