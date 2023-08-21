@@ -50,10 +50,10 @@
     # u₀::Matrix{T} = make_u₀Flat(x,y,Δx,borderLength+3.25*hₛ,WₕᴾM,hₚ,mass,ϵTol)
     # u₀::Matrix{T} = make_u₀Gauss(x,y,[Lx/2,Ly/2],0.9)
     # u₀::Matrix{T} = make_u₀Cross(x,y,Δx,1.0,WₕᴾS,ϵTol,1.0)
-    u₀::Matrix{T} = make_u₀GaussCross(x,y,Δx,1.0,WₕᴾS,ϵTol,1.0,[Lx/2,Ly/2],1.0)
+    u₀::Matrix{T} = make_u₀GaussCross(x,y,Δx,1.0,WₕᴾS,ϵTol,1.0,[Lx/2,Ly/2],1.0,mass)
 
     # saving 
-    folder_name::String = "Lx=6,Ly=6,GCross,u0Cross" 
+    folder_name::String = "Lx=6,Ly=6,GCross,u0GaussCross,Mass0.1pi" 
     show::Bool = true
     
 
@@ -173,7 +173,7 @@ function make_u₀Gauss(x,y,center,sd)
     return u₀
 end
 
-function make_u₀GaussCross(x,y,Δx,crossWidth,Wd,ϵTol,borderLength,center,sd,)
+function make_u₀GaussCross(x,y,Δx,crossWidth,Wd,ϵTol,borderLength,center,sd,mass)
     X = MvNormal(center,sd^2*I(2))
     Nx = length(x)
     Ny = length(y)
@@ -197,6 +197,7 @@ function make_u₀GaussCross(x,y,Δx,crossWidth,Wd,ϵTol,borderLength,center,sd,
 
     u₀ = imfilter(u₀,Wd,Fill(0,u₀))
     u₀[u₀ .< ϵTol] .= 0
+    u₀ = u₀ * mass
 
     return u₀
 

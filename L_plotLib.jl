@@ -23,8 +23,9 @@ function plotFunction(I,p; surfPlot=false)
     ratio = p.Nx/p.Ny
     fig = figure(figsize=(10,10))
     if surfPlot == false
-        imshow(I',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-        colorbar()
+        ct = contour(I',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+        clabel(ct,inline=1);
+        # colorbar()
     else
         xGrid = repeat(p.x,1,p.Ny)
         yGrid = repeat(p.y',p.Nx,1)
