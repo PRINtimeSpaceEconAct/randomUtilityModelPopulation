@@ -16,7 +16,7 @@
     y::LinRange{T, Int64} = LinRange(0,Ly,Ny)
 
     # global parameters
-    mass::T = π * 1.0   # total mass
+    mass::T = π * 0.1   # total mass
     n::T = 0.0          # birth rate
     σ::T = 0.05          # noise
     β::T = 0.6          # production function 
