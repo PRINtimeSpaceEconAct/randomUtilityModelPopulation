@@ -3,5 +3,6 @@
 pics
 Lx*
 .gitignore
+*.toml
 
 

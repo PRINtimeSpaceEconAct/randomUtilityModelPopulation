@@ -23,9 +23,8 @@ function plotFunction(I,p; surfPlot=false)
     ratio = p.Nx/p.Ny
     fig = figure(figsize=(10,10))
     if surfPlot == false
-        ct = contour(I',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-        clabel(ct,inline=1);
-        # colorbar()
+        imshow(I',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+        colorbar()
     else
         xGrid = repeat(p.x,1,p.Ny)
         yGrid = repeat(p.y',p.Nx,1)
@@ -167,44 +166,44 @@ function plotAll(sol,p; t = p.T_end, saveFig = false)
     # suptitle("t = $(round(t,digits=3))")
 
     subplot(231)
-    # im = imshow((l)',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    ct = contour(l',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    clabel(ct,inline=1);
+    im = imshow((l)',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    # ct = contour(l',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    # clabel(ct,inline=1);
     # colorbar(shrink=0.7)
     title("Workers")
 
     subplot(232)
-    # imshow(w',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    ct = contour(w',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    clabel(ct,inline=1);
+    imshow(w',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    # ct = contour(w',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    # clabel(ct,inline=1);
     # colorbar(shrink=0.7)
     title("Wages")
 
     subplot(233)
-    # imshow((Y)',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    ct = contour(Y',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    clabel(ct,inline=1);
+    imshow((Y)',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    # ct = contour(Y',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    # clabel(ct,inline=1);
     # colorbar(shrink=0.7)
     title("Total income")
 
     subplot(234)
-    # imshow((AEN)',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    ct = contour(AEN',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    clabel(ct,inline=1);
+    imshow((AEN)',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    # ct = contour(AEN',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    # clabel(ct,inline=1);
     # colorbar(shrink=0.7)
     title("Endogenous amenities")
 
     subplot(235)
-    # imshow((Al)',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    ct = contour(Al',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    clabel(ct,inline=1);
+    imshow((Al)',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    # ct = contour(Al',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    # clabel(ct,inline=1);
     # colorbar(shrink=0.7)
     title("Technological progress")
 
     subplot(236)
-    # imshow((Utility)',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    ct = contour(Utility',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
-    clabel(ct,inline=1);
+    imshow((Utility)',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    # ct = contour(Utility',origin="lower",extent=(0.0,p.Lx,0.0,p.Ly))
+    # clabel(ct,inline=1);
     # colorbar(shrink=0.7)
     title("Individual utility")
 

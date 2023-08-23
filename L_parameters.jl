@@ -16,7 +16,7 @@
     y::LinRange{T, Int64} = LinRange(0,Ly,Ny)
 
     # global parameters
-    mass::T = π * 0.1   # total mass
+    mass::T = π * 1.0   # total mass
     n::T = 0.0          # birth rate
     σ::T = 0.05          # noise
     β::T = 0.6          # production function 
@@ -26,8 +26,8 @@
     hₛ::T = 0.2           # bandwith sharp mollifier
     WₕᴾM::Matrix{T} = make_WDiscrete(Δx,hₚ)            
     WₕᴾS::Matrix{T} = make_WDiscrete(Δx,hₛ)            
-    # GM::Matrix{T} = make_smoothedBump(x,y,Δx,borderLength+2*hₛ,ones(1,1),0,ϵTol) 
-    GM::Matrix{T} = make_GCross(x,y,Δx,1.0,WₕᴾS,ϵTol)
+    GM::Matrix{T} = make_smoothedBump(x,y,Δx,borderLength+2*hₛ,ones(1,1),0,ϵTol) 
+    # GM::Matrix{T} = make_GCross(x,y,Δx,1.0,WₕᴾS,ϵTol)
     @assert hₚ < borderLength + hₛ
 
     # wages   
@@ -48,12 +48,14 @@
 
     # initial condition
     # u₀::Matrix{T} = make_u₀Flat(x,y,Δx,borderLength+3.25*hₛ,WₕᴾM,hₚ,mass,ϵTol)
+    u₀::Matrix{T} = make_u₀Flat(x,y,Δx,[Lx/3+0.5,Ly/2],[1.6,2.],WₕᴾM,hₚ,mass,ϵTol)
+    # u₀::Matrix{T} = make_u₀Circle(x,y,Δx,[Lx/2,Ly/2],1.0,WₕᴾM,hₚ,borderLength,mass)
     # u₀::Matrix{T} = make_u₀Gauss(x,y,[Lx/2,Ly/2],0.9)
     # u₀::Matrix{T} = make_u₀Cross(x,y,Δx,1.0,WₕᴾS,ϵTol,1.0)
-    u₀::Matrix{T} = make_u₀GaussCross(x,y,Δx,1.0,WₕᴾS,ϵTol,1.0,[Lx/2,Ly/2],1.0,mass)
+    # u₀::Matrix{T} = make_u₀GaussCross(x,y,Δx,1.0,WₕᴾS,ϵTol,1.0,[Lx/2,Ly/2],1.0,mass)
 
     # saving 
-    folder_name::String = "Lx=6,Ly=6,GCross,u0GaussCross,Mass0.1pi" 
+    folder_name::String = "Lx=6,Ly=6,GUnif,u0FakeViaEmilia" 
     show::Bool = true
     
 
@@ -165,6 +167,18 @@ function make_u₀Flat(x,y,Δx,borderLength,Wd,bandwidth,mass,ϵTol)
     return u₀
 end
 
+function make_u₀Flat(x,y,Δx,center,r,Wd,bandwidth,mass,ϵTol)
+    Nx = length(x)
+    Ny = length(y)
+    u₀ = bump(center,r,mass,Nx,Ny,Δx)
+
+    u₀ = imfilter(u₀,Wd,Fill(0,u₀))
+    u₀ = u₀ / (sum(u₀)*Δx^2) * mass
+    u₀[u₀ .< ϵTol] .= 0
+
+    return u₀
+end
+
 function make_u₀Gauss(x,y,center,sd)
     X = MvNormal(center,sd^2*I(2))
     Nx = length(x)
@@ -179,8 +193,6 @@ function make_u₀GaussCross(x,y,Δx,crossWidth,Wd,ϵTol,borderLength,center,sd,
     Ny = length(y)
     u₀ = reshape(pdf(X,[[xi,yi] for xi in x for yi in y]),Nx,Ny)
 
-    Nx = length(x)
-    Ny = length(y)
     rNpts = ceil(Int,borderLength/Δx)
 
     crossWidthNpt = floor(Int,crossWidth/Δx)
@@ -203,18 +215,24 @@ function make_u₀GaussCross(x,y,Δx,crossWidth,Wd,ϵTol,borderLength,center,sd,
 
 end
 
+function make_u₀Circle(x,y,Δx,center,radius,Wd,ϵTol,borderLength,mass)
+    Nx = length(x)
+    Ny = length(y)
+    u₀ = zeros(Nx,Ny)
 
-# function make_u₀(x,y,Δx,center::Vector{T},r::Vector{T},Wd,bandwidth,mass,ϵTol) where T
-#     Nx = length(x)
-#     Ny = length(y)
-#     u₀ = bump(center,r-bandwidth,1,Nx,Ny,Δx)
+    rNpts = ceil(Int,borderLength/Δx)
+    for i=1:Nx, j=1:Ny
+        if (x[i]-center[1])^2 + (y[j]-center[2])^2 ≤ radius^2
+            u₀[i,j] = 1
+        end
+    end
 
-#     u₀ = imfilter(u₀,Wd,Fill(0,u₀))
-#     u₀ = u₀ / (sum(u₀)*Δx^2) * mass
-#     u₀[u₀ .< ϵTol] .= 0
+    u₀ = imfilter(u₀,Wd,Fill(0,u₀))
+    u₀[u₀ .< ϵTol] .= 0
+    u₀ = u₀ * mass
 
-#     return u₀
-# end
+    return u₀
+end
 
 function bump(borderLength::T,height,Nx,Ny,Δx) where T
     cube = zeros(Nx,Ny)
