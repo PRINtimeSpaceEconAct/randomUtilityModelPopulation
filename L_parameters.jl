@@ -2,9 +2,9 @@
 @with_kw struct RUM{T}
 
     # domain
-    Lx::T = 6.0
-    Ly::T = 6.0
-    T_end::T = 120.0
+    Lx::T = 4.0
+    Ly::T = 4.0
+    T_end::T = 20.0
     borderLength::T = 0.2
 
     # numerical
@@ -22,7 +22,7 @@
     β::T = 0.6          # production function 
 
     # local technological progress Al
-    hₚ::T = 0.3           # bandwith convolution
+    hₚ::T = 0.4           # bandwith convolution
     hₛ::T = 0.2           # bandwith sharp mollifier
     WₕᴾM::Matrix{T} = make_WDiscrete(Δx,hₚ)            
     WₕᴾS::Matrix{T} = make_WDiscrete(Δx,hₛ)            
@@ -31,7 +31,7 @@
     @assert hₚ < borderLength + hₛ
 
     # wages   
-    ϵY::T = 0.01        # minimum threshold up to which l^β becomes linear 
+    ϵY::T = 1e-6        # minimum threshold up to which l^β becomes constant assuming N = 10^6
     γw::T = 0.01        # speed 
     
     # endogenous amenities
@@ -47,15 +47,15 @@
     ∂yAES::Matrix{T} = ∂y(AES,Nx,Ny,Δx)                                 # precompute ∂y
 
     # initial condition
-    # u₀::Matrix{T} = make_u₀Flat(x,y,Δx,borderLength+3.25*hₛ,WₕᴾM,hₚ,mass,ϵTol)
-    u₀::Matrix{T} = make_u₀Flat(x,y,Δx,[Lx/3+0.5,Ly/2],[1.6,2.],WₕᴾM,hₚ,mass,ϵTol)
+    u₀::Matrix{T} = make_u₀Flat(x,y,Δx,borderLength+3.25*hₛ,WₕᴾM,hₚ,mass,ϵTol)
+    # u₀::Matrix{T} = make_u₀Flat(x,y,Δx,[Lx/3+0.5,Ly/2],[1.6,2.],WₕᴾM,hₚ,mass,ϵTol)
     # u₀::Matrix{T} = make_u₀Circle(x,y,Δx,[Lx/2,Ly/2],1.0,WₕᴾM,hₚ,borderLength,mass)
     # u₀::Matrix{T} = make_u₀Gauss(x,y,[Lx/2,Ly/2],0.9)
     # u₀::Matrix{T} = make_u₀Cross(x,y,Δx,1.0,WₕᴾS,ϵTol,1.0)
     # u₀::Matrix{T} = make_u₀GaussCross(x,y,Δx,1.0,WₕᴾS,ϵTol,1.0,[Lx/2,Ly/2],1.0,mass)
 
     # saving 
-    folder_name::String = "Lx=6,Ly=6,GUnif,u0FakeViaEmilia" 
+    folder_name::String = "Lx=4,Ly=4,GUnif,u0Unif,lLower1e-6" 
     show::Bool = true
     
 
@@ -73,21 +73,37 @@ end
 
 function fY(x,p) return fY(x,p.ϵY,p.β)  end
 
-function fY(x,ϵY,β)
+# function fY(x,ϵY,β) # linear before ϵY
+#     if x > ϵY 
+#         return x^β + (-1/2*β^2 + 3/2*β - 1)*ϵY^β
+#     else 
+#         return 1/2*β*(β-1)*ϵY^(β-2)*x^2 + β*(2-β)*ϵY^(β-1)*x
+#     end
+# end
+
+function fY(x,ϵY,β) # 0 before ϵY
     if x > ϵY 
-        return x^β + (-1/2*β^2 + 3/2*β - 1)*ϵY^β
+        return x^β 
     else 
-        return 1/2*β*(β-1)*ϵY^(β-2)*x^2 + β*(2-β)*ϵY^(β-1)*x
+        return 0 
     end
 end
 
 function fw(x,p) return fw(x,p.ϵY,p.β) end
 
-function fw(x,ϵY,β)
+# function fw(x,ϵY,β) # linear before ϵY
+#     if x > ϵY 
+#         return x^(β-1)
+#     else 
+#         return (β*(β-1)*ϵY^(β-2)*x + β*(2-β)*ϵY^(β-1))/β
+#     end
+# end
+
+function fw(x,ϵY,β) # 0 before ϵY
     if x > ϵY 
         return x^(β-1)
     else 
-        return (β*(β-1)*ϵY^(β-2)*x + β*(2-β)*ϵY^(β-1))/β
+        return 0
     end
 end
 
