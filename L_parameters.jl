@@ -71,7 +71,7 @@ function Wᴾ(x,h)
     return 1/h*Wᴾ(x/h)
 end
 
-function fY(x,p) return fY(x,p.ϵY,p.β,p.Δx)  end
+function fY(x,p) return fY(x,p.ϵY,p.β)  end
 
 # function fY(x,ϵY,β) # linear before ϵY
 #     if x > ϵY 
@@ -81,15 +81,15 @@ function fY(x,p) return fY(x,p.ϵY,p.β,p.Δx)  end
 #     end
 # end
 
-function fY(x,ϵY,β,Δx) # 0 before ϵY
-    if (Δx^2 * x) > ϵY 
-        return (Δx^2 * x)^β 
+function fY(x,ϵY,β) # 0 before ϵY
+    if x > ϵY 
+        return x^β 
     else 
         return 0 
     end
 end
 
-function fw(x,p) return fw(x,p.ϵY,p.β,p.Δx) end
+function fw(x,p) return fw(x,p.ϵY,p.β) end
 
 # function fw(x,ϵY,β) # linear before ϵY
 #     if x > ϵY 
@@ -99,9 +99,9 @@ function fw(x,p) return fw(x,p.ϵY,p.β,p.Δx) end
 #     end
 # end
 
-function fw(x,ϵY,β,Δx) # 0 before ϵY
-    if Δx^2 * x > ϵY 
-        return (Δx^2 * x)^(β-1)
+function fw(x,ϵY,β) # 0 before ϵY
+    if x > ϵY 
+        return x^(β-1)
     else 
         return 0
     end

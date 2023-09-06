@@ -5,9 +5,9 @@ function df!(dl,l,p,t)
     Wₕᴾl[Wₕᴾl .< p.ϵTol] .= 0
 
     Al = p.GM .* Wₕᴾl                                           # local technological progress
-    w =  Al .* fw.(abs.(l),p.ϵY,p.β,p.Δx)                            # wages
-    Y =  Al .* fY.(abs.(l),p.ϵY,p.β,p.Δx)                            # production
-    AEN =  p.GM .* ((p.τ^p.φ) * fY.(Y,p.ϵY,p.φ,p.Δx) .- p.γA * l)    # endogenous amenities 
+    w =  Al .* fw.(abs.(l),p.ϵY,p.β)                            # wages
+    Y =  Al .* fY.(abs.(l),p.ϵY,p.β)                            # production
+    AEN =  p.GM .* ((p.τ^p.φ) * fY.(Y,p.ϵY,p.φ) .- p.γA * l)    # endogenous amenities 
    
     ∂xU = ∂x(p.γw * w + p.γEN * AEN,p) + p.γES * p.∂xAES
     ∂yU = ∂y(p.γw * w + p.γEN * AEN,p) + p.γES * p.∂yAES
