@@ -5,7 +5,7 @@
     Lx::T = 4.0
     Ly::T = 4.0
     T_end::T = 20.0
-    borderLength::T = 0.2
+    borderLength::T = 0.3
 
     # numerical
     ϵTol::T = 1e-12                # threshold to consider zero 
