@@ -85,7 +85,9 @@ function fY(x,ϵY,β) # 0 before ϵY
     if x > ϵY 
         return x^β 
     else 
-        return 0 
+        a =  (β-2)*ϵY^(β-3)
+        b =  (3-β)*ϵY^(β-2)
+        return a*x^3 + b*x^2
     end
 end
 
@@ -103,7 +105,9 @@ function fw(x,ϵY,β) # 0 before ϵY
     if x > ϵY 
         return x^(β-1)
     else 
-        return 0
+        a =  (β-3)*ϵY^(β-4)
+        b =  (4-β)*ϵY^(β-3)
+        return a*x^3 + b*x^2
     end
 end
 
