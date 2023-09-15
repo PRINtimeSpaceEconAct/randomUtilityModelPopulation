@@ -4,7 +4,7 @@
     # domain
     Lx::T = 4.0
     Ly::T = 4.0
-    T_end::T = 20.0
+    T_end::T = 30.0
     borderLength::T = 0.3
 
     # numerical
@@ -19,7 +19,7 @@
     mass::T = π * 1.0   # total mass
     n::T = 0.0          # birth rate
     σ::T = 0.05          # noise
-    β::T = 0.6          # production function 
+    β::T = 0.9          # production function 
 
     # local technological progress Al
     hₚ::T = 0.4           # bandwith convolution
@@ -31,7 +31,7 @@
     @assert hₚ < borderLength + hₛ
 
     # wages   
-    ϵY::T = 1e-6        # minimum threshold up to which l^β becomes constant assuming N = 10^6
+    ϵY::T = 1e-2        # minimum threshold up to which l^β becomes constant assuming N = 10^6
     γw::T = 0.01        # speed 
     
     # endogenous amenities
@@ -55,7 +55,7 @@
     # u₀::Matrix{T} = make_u₀GaussCross(x,y,Δx,1.0,WₕᴾS,ϵTol,1.0,[Lx/2,Ly/2],1.0,mass)
 
     # saving 
-    folder_name::String = "Lx=4,Ly=4,GUnif,u0Unif,lLower1e-6" 
+    folder_name::String = "Lx=4,Ly=4,GUnif,u0Unif" 
     show::Bool = true
     
 
@@ -73,43 +73,43 @@ end
 
 function fY(x,p) return fY(x,p.ϵY,p.β)  end
 
-# function fY(x,ϵY,β) # linear before ϵY
-#     if x > ϵY 
-#         return x^β + (-1/2*β^2 + 3/2*β - 1)*ϵY^β
-#     else 
-#         return 1/2*β*(β-1)*ϵY^(β-2)*x^2 + β*(2-β)*ϵY^(β-1)*x
-#     end
-# end
-
-function fY(x,ϵY,β) # 0 before ϵY
+function fY(x,ϵY,β) # linear before ϵY
     if x > ϵY 
-        return x^β 
+        return x^β + (-1/2*β^2 + 3/2*β - 1)*ϵY^β
     else 
-        a =  (β-2)*ϵY^(β-3)
-        b =  (3-β)*ϵY^(β-2)
-        return a*x^3 + b*x^2
+        return 1/2*β*(β-1)*ϵY^(β-2)*x^2 + β*(2-β)*ϵY^(β-1)*x
     end
 end
+
+# function fY(x,ϵY,β) # 0 before ϵY
+#     if x > ϵY 
+#         return x^β 
+#     else 
+#         a =  (β-2)*ϵY^(β-3)
+#         b =  (3-β)*ϵY^(β-2)
+#         return a*x^3 + b*x^2
+#     end
+# end
 
 function fw(x,p) return fw(x,p.ϵY,p.β) end
 
-# function fw(x,ϵY,β) # linear before ϵY
-#     if x > ϵY 
-#         return x^(β-1)
-#     else 
-#         return (β*(β-1)*ϵY^(β-2)*x + β*(2-β)*ϵY^(β-1))/β
-#     end
-# end
-
-function fw(x,ϵY,β) # 0 before ϵY
+function fw(x,ϵY,β) # linear before ϵY
     if x > ϵY 
         return x^(β-1)
     else 
-        a =  (β-3)*ϵY^(β-4)
-        b =  (4-β)*ϵY^(β-3)
-        return a*x^3 + b*x^2
+        return (β*(β-1)*ϵY^(β-2)*x + β*(2-β)*ϵY^(β-1))/β
     end
 end
+
+# function fw(x,ϵY,β) # 0 before ϵY
+#     if x > ϵY 
+#         return x^(β-1)
+#     else 
+#         a =  (β-3)*ϵY^(β-4)
+#         b =  (4-β)*ϵY^(β-3)
+#         return a*x^3 + b*x^2
+#     end
+# end
 
 function make_WDiscrete(Δx,bandwith)
     Npt = ceil(Int,bandwith/Δx)
