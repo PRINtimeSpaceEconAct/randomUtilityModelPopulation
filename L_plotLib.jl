@@ -137,8 +137,8 @@ end
 
 
 function plotAll(sol,p; t = p.T_end, saveFig = false)
-    # fig = figure(figsize=(15,10/(p.Nx/p.Ny)))
-    # fig.clear()
+    fig = figure(figsize=(15,10/(p.Nx/p.Ny)))
+    fig.clear()
     
     subplots = [231,232,233,234,235,236]
 

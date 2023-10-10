@@ -16,10 +16,11 @@
     y::LinRange{T, Int64} = LinRange(0,Ly,Ny)
 
     # global parameters
-    mass::T = π * 1.0   # total mass
+    mass::T = 1.0       # total mass
     n::T = 0.0          # birth rate
-    σ::T = 0.05          # noise
-    β::T = 0.9          # production function 
+    σ::T = 0.05         # noise
+    β::T = 0.6          # production function 
+    cM::T = 100.0       # movement cost
 
     # local technological progress Al
     hₚ::T = 0.4           # bandwith convolution
@@ -32,17 +33,17 @@
 
     # wages   
     ϵY::T = 1e-2        # minimum threshold up to which l^β becomes constant assuming N = 10^6
-    γw::T = 0.01        # speed 
+    γw::T = 1.0         # wages (0-1) on-off
     
     # endogenous amenities
-    γEN::T = 0.06       # speed
+    γEN::T = 1.0        # AEN (0-1) on-off
     τ::T = 0.2          # share income to amenities
     φ::T = 0.5          # production function amenities
     γA::T = 0.2         # intensity congestion 
 
     # exogenous amenities
-    γES::T = 10.0                                                        # speed 
-    AES::Matrix{T} =  make_smoothedBump(x,y,Δx,borderLength,WₕᴾS,hₛ,ϵTol)  # spatial distribution
+    γES::T = 1.0        # AES (0-1) on-off
+    AES::Matrix{T} =  10*make_smoothedBump(x,y,Δx,borderLength,WₕᴾS,hₛ,ϵTol)  # spatial distribution
     ∂xAES::Matrix{T} = ∂x(AES,Nx,Ny,Δx)                                 # precompute ∂x
     ∂yAES::Matrix{T} = ∂y(AES,Nx,Ny,Δx)                                 # precompute ∂y
 
@@ -81,16 +82,6 @@ function fY(x,ϵY,β) # linear before ϵY
     end
 end
 
-# function fY(x,ϵY,β) # 0 before ϵY
-#     if x > ϵY 
-#         return x^β 
-#     else 
-#         a =  (β-2)*ϵY^(β-3)
-#         b =  (3-β)*ϵY^(β-2)
-#         return a*x^3 + b*x^2
-#     end
-# end
-
 function fw(x,p) return fw(x,p.ϵY,p.β) end
 
 function fw(x,ϵY,β) # linear before ϵY
@@ -101,15 +92,6 @@ function fw(x,ϵY,β) # linear before ϵY
     end
 end
 
-# function fw(x,ϵY,β) # 0 before ϵY
-#     if x > ϵY 
-#         return x^(β-1)
-#     else 
-#         a =  (β-3)*ϵY^(β-4)
-#         b =  (4-β)*ϵY^(β-3)
-#         return a*x^3 + b*x^2
-#     end
-# end
 
 function make_WDiscrete(Δx,bandwith)
     Npt = ceil(Int,bandwith/Δx)
@@ -228,8 +210,8 @@ function make_u₀GaussCross(x,y,Δx,crossWidth,Wd,ϵTol,borderLength,center,sd,
     u₀[:,(Ny-rNpts):Ny] .= 0
 
     u₀ = imfilter(u₀,Wd,Fill(0,u₀))
+    u₀ = u₀ / (sum(u₀)*Δx^2) * mass
     u₀[u₀ .< ϵTol] .= 0
-    u₀ = u₀ * mass
 
     return u₀
 
